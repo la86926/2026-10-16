@@ -236,6 +236,21 @@
     .detail-view.is-revealed .eq-result { opacity: 1; filter: blur(0); transform: translateY(0); }
     .detail-body { max-width: 980px; margin: 0 auto; opacity: 0; transform: translateY(17px); transition: opacity .6s .14s, transform .6s .14s var(--ease); }
     .detail-view.is-revealed .detail-body { opacity: 1; transform: translateY(0); }
+    /* Revelación escalonada: primero los casos, luego las preguntas y por último las acciones. */
+    .case-card, .detail-lower > *, .detail-actions > * {
+      opacity: 0; transform: translateY(15px);
+      transition: opacity .55s var(--ease), transform .55s var(--ease);
+    }
+    .detail-view.is-revealed .case-card,
+    .detail-view.is-revealed .detail-lower > *,
+    .detail-view.is-revealed .detail-actions > * { opacity: 1; transform: translateY(0); }
+    .detail-view.is-revealed .case-card:nth-child(1) { transition-delay: .17s; }
+    .detail-view.is-revealed .case-card:nth-child(2) { transition-delay: .3s; }
+    .detail-view.is-revealed .detail-lower > :nth-child(1) { transition-delay: .43s; }
+    .detail-view.is-revealed .detail-lower > :nth-child(2) { transition-delay: .54s; }
+    .detail-view.is-revealed .detail-actions > :nth-child(1) { transition-delay: .67s; }
+    .detail-view.is-revealed .detail-actions > :nth-child(2) { transition-delay: .76s; }
+    .detail-view.is-revealed .detail-actions > :nth-child(3) { transition-delay: .85s; }
     .detail-lead { text-align: center; color: #c2ccdd; font-size: 13px; line-height: 1.65; margin: 2px auto 25px; max-width: 640px; }
     .cases { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
     .case-card {
