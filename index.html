@@ -473,9 +473,10 @@
         wrap.className="reflection-item";
         const button=document.createElement("button");
         button.type="button"; button.className="reflection-button"; button.setAttribute("aria-expanded","false");
+        button.setAttribute("aria-controls","reflexion-"+i);
         button.innerHTML="<span></span><span aria-hidden='true'>+</span>";
         button.firstElementChild.textContent=pair[0];
-        const fold=document.createElement("div"); fold.className="reflection-fold";
+        const fold=document.createElement("div"); fold.className="reflection-fold";fold.id="reflexion-"+i;
         const inner=document.createElement("div"); inner.className="reflection-inner";
         const answer=document.createElement("p"); answer.textContent=pair[1];
         inner.append(answer);fold.append(inner);
@@ -496,6 +497,10 @@
       const b=to.getBoundingClientRect();
       const ghost=document.createElement("div");
       ghost.className="axis-pill flying-pill";
+      // El elemento móvil está fuera del plano: se le pasa el mismo color del cuadrante.
+      for (const variable of ["--focus","--focus-bg","--focus-edge"]) {
+        ghost.style.setProperty(variable,scene.style.getPropertyValue(variable));
+      }
       ghost.innerHTML=label.innerHTML;
       ghost.style.left=a.left+"px"; ghost.style.top=a.top+"px";
       ghost.style.width=a.width+"px"; ghost.style.height=a.height+"px";
