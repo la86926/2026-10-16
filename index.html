@@ -1,963 +1,573 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#080b13">
-  <meta name="description" content="Un mapa interactivo para mirar lo que ocurre, comprender lo que duele y elegir cómo responder.">
-  <title>El arte de responder · Un mapa interior</title>
+  <meta name="theme-color" content="#faf9fd">
+  <meta name="description" content="Un plano cartesiano para comprender cuatro formas de responder a una situación">
+  <title>Plano de respuestas</title>
+  <!-- Logo y favicon integrados: no se necesitan imágenes adicionales -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x2='1' y2='1'%3E%3Cstop stop-color='%23f9a8c4'/%3E%3Cstop offset='1' stop-color='%23997bea'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='17' fill='url(%23g)'/%3E%3Cpath d='M32 11v42M11 32h42' stroke='white' stroke-width='3.5' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='32' r='7' fill='white'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;550;600;650;700;750;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700;750;800&display=swap" rel="stylesheet">
   <style>
-    /* ===== 01 / Fundamentos visuales ===== */
+    /* Paleta clara por defecto: pocos elementos y jerarquía nítida */
     :root {
-      color-scheme: dark;
-      --ink: #080b13;
-      --surface: #101623;
-      --text: #f2f5fc;
-      --muted: #a0abc1;
-      --line: rgba(195, 209, 242, .12);
-      --ease: cubic-bezier(.22, 1, .36, 1);
-      --amber: #ffc675;
-      --coral: #ff90a4;
-      --cyan: #80dcf1;
-      --emerald: #8fe7ba;
-      --accent: #a9b7d1;
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
       font-synthesis: none;
+      --page:#faf9fd; --panel:#fff; --paper:#fff;
+      --text:#283048; --muted:#6b7388; --line:#e8e5ef;
+      --axis:#758099; --shadow:0 15px 55px rgba(48,38,85,.045);
+      --ambient:#fcfbff; --button:#f6f4fa;
+      --amber:#a97726; --amber-bg:#fff4dd; --amber-edge:#f3d6a3;
+      --rose:#b85d82; --rose-bg:#fff0f5; --rose-edge:#f2c5d5;
+      --sky:#2a819c; --sky-bg:#e9f8fc; --sky-edge:#b8e3ed;
+      --green:#347e62; --green-bg:#e9f8ef; --green-edge:#b8e4ca;
+      --accent:#9377bc; --accent-bg:#f3edfc; --accent-border:#d6c7ee;
+      --ease:cubic-bezier(.22,1,.36,1);
+      color-scheme:light;
     }
-    *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      min-width: 300px;
-      min-height: 100vh;
-      color: var(--text);
-      background:
-        radial-gradient(ellipse 60% 34% at 50% -4%, rgba(73, 89, 153, .16), transparent 74%),
-        radial-gradient(ellipse 40% 32% at 1% 85%, rgba(30, 140, 162, .07), transparent 85%),
-        var(--ink);
-      -webkit-font-smoothing: antialiased;
+    html[data-theme="dark"] {
+      --page:#151722; --panel:#1b1d2b; --paper:#242738;
+      --text:#f1edf8; --muted:#aeb4c6; --line:#38394e;
+      --axis:#a4a8bf; --shadow:0 18px 65px rgba(0,0,0,.12);
+      --ambient:#171a27; --button:#2a2b3e;
+      --amber:#ffd38d; --amber-bg:#43372b; --amber-edge:#796246;
+      --rose:#ffacc8; --rose-bg:#482d3f; --rose-edge:#795166;
+      --sky:#91e3fa; --sky-bg:#243d4b; --sky-edge:#4a7285;
+      --green:#9de7bd; --green-bg:#264538; --green-edge:#4e7760;
+      --accent:#dbbdfb; --accent-bg:#392c49; --accent-border:#645074;
+      color-scheme:dark;
     }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' opacity='.13' filter='url(%23n)'/%3E%3C/svg%3E");
-      opacity: .11;
-      z-index: 20;
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;background:var(--page);color:var(--text);min-width:300px;-webkit-font-smoothing:antialiased;transition:background .32s,color .32s}
+    button{font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{outline:3px solid var(--accent);outline-offset:4px}
+    .app{width:min(1120px,calc(100% - 38px));margin:0 auto;padding:0 0 26px}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;height:68px}
+    .logo{display:flex;align-items:center;justify-content:center;width:39px;height:39px;border:0;border-radius:12px;background:linear-gradient(135deg,#f5aacd,#a68be8);box-shadow:0 7px 17px rgba(182,119,175,.13)}
+    .logo svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round}
+    .theme-switch{display:flex;align-items:center;gap:9px;padding:9px 13px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:12px;font-weight:650;transition:background .2s,border-color .2s}
+    .theme-switch:hover{border-color:var(--accent-border)}
+    .theme-switch svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+    .scene{--focus:var(--accent);--focus-bg:var(--accent-bg);--focus-edge:var(--accent-border);position:relative;isolation:isolate;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:23px;box-shadow:var(--shadow);min-height:560px;transition:background .35s,border-color .35s}
+    /* El plano conserva la cruz cartesiana en primer plano */
+    .map{position:relative;width:100%;height:clamp(550px,68vh,670px);opacity:1;transition:opacity .36s ease,filter .36s ease;background:var(--panel)}
+    .map::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 49.95%,rgba(132,137,156,.035) 50%,transparent 50.05%)}
+    .axis{position:absolute;z-index:1;pointer-events:none;background:var(--axis);opacity:.81;transition:background .2s,box-shadow .25s,opacity .25s}
+    .axis[data-half="x-neg"]{top:50%;left:27px;width:calc(50% - 27px);height:2px}
+    .axis[data-half="x-pos"]{top:50%;left:50%;right:27px;height:2px}
+    .axis[data-half="y-pos"]{left:50%;top:26px;height:calc(50% - 26px);width:2px}
+    .axis[data-half="y-neg"]{left:50%;top:50%;bottom:26px;width:2px}
+    .axis.is-lit{background:var(--focus);opacity:1;box-shadow:0 0 11px var(--focus)}
+    .axis.is-dim{opacity:.18}
+    .arrow{position:absolute;z-index:1;pointer-events:none;font-size:17px;line-height:1;color:var(--axis);font-weight:700}
+    .arrow.top{top:9px;left:calc(50% - 6px)}
+    .arrow.bottom{bottom:8px;left:calc(50% - 6px)}
+    .arrow.left{left:9px;top:calc(50% - 9px)}
+    .arrow.right{right:9px;top:calc(50% - 9px)}
+    .axis-home{position:absolute;z-index:4;width:124px;height:44px}
+    .axis-home[data-axis-home="y-pos"]{left:50%;top:27px;transform:translateX(-50%)}
+    .axis-home[data-axis-home="y-neg"]{left:50%;bottom:27px;transform:translateX(-50%)}
+    .axis-home[data-axis-home="x-neg"]{left:28px;top:50%;transform:translateY(-50%)}
+    .axis-home[data-axis-home="x-pos"]{right:28px;top:50%;transform:translateY(-50%)}
+    .axis-pill{width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px;text-align:center;background:var(--panel);color:var(--text);border:1.5px solid var(--line);border-radius:14px;font-size:12px;font-weight:700;box-shadow:0 3px 8px rgba(0,0,0,.02);transition:color .2s,background .2s,border-color .2s,box-shadow .2s}
+    .axis-pill small{font-size:9px;font-weight:750;letter-spacing:.1em;color:var(--muted)}
+    .axis-pill.is-lit,.flying-pill{color:var(--focus)!important;background:var(--focus-bg)!important;border-color:var(--focus-edge)!important;box-shadow:0 0 19px color-mix(in srgb,var(--focus) 23%,transparent)}
+    .axis-pill.is-lit small,.flying-pill small{color:var(--focus)}
+    .axis-pill.travelling{visibility:hidden}
+    .origin{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:112px;height:73px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;border-radius:19px;border:1.5px solid var(--accent-border);background:var(--accent-bg);color:var(--text);box-shadow:0 4px 20px rgba(60,40,80,.07);transition:transform .2s,box-shadow .2s}
+    .origin:hover{transform:translate(-50%,-50%) scale(1.04)}
+    .origin b{font-size:10px;font-weight:800;letter-spacing:.045em}
+    .origin small{font-size:11px;color:var(--accent);font-weight:750}
+    .origin-note{position:absolute;z-index:9;left:50%;top:calc(50% + 49px);width:min(310px,calc(100% - 30px));transform:translateX(-50%);padding:16px 19px;background:var(--paper);border:1px solid var(--accent-border);border-radius:14px;box-shadow:0 12px 30px rgba(30,28,50,.13);font-size:13px;line-height:1.6;color:var(--text)}
+    .origin-note[hidden]{display:none}
+    .quadrant{--q:var(--accent);--q-bg:var(--accent-bg);--q-edge:var(--accent-border);position:absolute;z-index:2;width:clamp(140px,27%,268px);min-height:119px;padding:17px 19px;border:1.5px solid var(--q-edge);border-radius:17px;background:var(--q-bg);color:var(--q);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:9px;text-align:left;transition:transform .35s var(--ease),box-shadow .3s,border-color .2s,opacity .3s}
+    .quadrant:hover,.quadrant:focus-visible,.quadrant.suggested{transform:translateY(-4px);box-shadow:0 10px 27px color-mix(in srgb,var(--q) 14%,transparent)}
+    .quadrant[data-route="heal"]{--q:var(--rose);--q-bg:var(--rose-bg);--q-edge:var(--rose-edge);left:12%;top:19%}
+    .quadrant[data-route="learn"]{--q:var(--amber);--q-bg:var(--amber-bg);--q-edge:var(--amber-edge);right:12%;top:19%}
+    .quadrant[data-route="release"]{--q:var(--sky);--q-bg:var(--sky-bg);--q-edge:var(--sky-edge);left:12%;bottom:19%}
+    .quadrant[data-route="thanks"]{--q:var(--green);--q-bg:var(--green-bg);--q-edge:var(--green-edge);right:12%;bottom:19%}
+    .q-no{font-size:10px;font-weight:750;letter-spacing:.15em;opacity:.72}
+    .q-name{font-size:clamp(22px,2.8vw,32px);font-weight:750;letter-spacing:-.055em;line-height:1.1}
+    .q-open{position:absolute;top:15px;right:17px;font-size:15px;opacity:.65}
+    /* Al entrar al detalle, el mapa se retira por completo: sin letras residuales */
+    .scene[data-view="detail"] .map{position:absolute;inset:0;pointer-events:none;opacity:0;filter:blur(7px)}
+    .detail{position:absolute;inset:0;z-index:6;visibility:hidden;opacity:0;pointer-events:none;padding:18px clamp(15px,4vw,42px) 34px;transition:opacity .4s ease,visibility .4s}
+    .scene[data-view="detail"] .detail{position:relative;inset:auto;visibility:visible;opacity:1;pointer-events:auto;min-height:560px}
+    .detail-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    /* Volver es la acción principal de navegación */
+    .back{position:sticky;top:12px;z-index:12;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 20px;border:2px solid var(--accent-border);border-radius:14px;background:var(--accent-bg);color:var(--text);font-size:13px;font-weight:800;box-shadow:0 5px 16px rgba(94,68,139,.10);transition:transform .2s,background .2s}
+    .back:hover{transform:translateX(-3px);background:var(--accent-border)}
+    .back svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round}
+    .route-tag{font-size:11px;font-weight:750;color:var(--focus);letter-spacing:.06em}
+    .equation{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:35px auto 14px;min-height:55px}
+    .eq-slot{width:133px;height:49px;flex:none}
+    .eq-pill{opacity:0;transition:opacity .15s}
+    .eq-pill.arrived{opacity:1}
+    .operator{font-size:23px;font-weight:500;color:var(--muted)}
+    .outcome{font-size:clamp(27px,4vw,40px);font-weight:800;letter-spacing:-.065em;color:var(--focus);opacity:0;transform:translateY(9px);transition:opacity .45s,transform .5s var(--ease)}
+    .detail.ready .outcome{opacity:1;transform:translateY(0)}
+    .lead{font-size:13px;line-height:1.55;color:var(--muted);max-width:610px;margin:9px auto 28px;text-align:center;opacity:0;transition:opacity .4s .12s}
+    .detail.ready .lead{opacity:1}
+    .case-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:966px;margin:0 auto}
+    .case{background:var(--paper);border:1px solid var(--line);border-radius:17px;padding:22px;opacity:0;transform:translateY(15px);transition:opacity .5s,transform .5s var(--ease)}
+    .detail.ready .case{opacity:1;transform:translateY(0)}
+    .detail.ready .case:nth-child(1){transition-delay:.13s}
+    .detail.ready .case:nth-child(2){transition-delay:.24s}
+    .case-no{display:block;font-size:11px;color:var(--focus);font-weight:800;letter-spacing:.07em}
+    .situation{font-size:14px;font-weight:650;line-height:1.55;letter-spacing:-.025em;margin:11px 0 17px;min-height:44px}
+    .case-question{font-size:12px;font-weight:750;margin:0 0 11px}
+    .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .choice{min-height:42px;padding:9px 10px;background:var(--button);color:var(--muted);border:1px solid var(--line);border-radius:10px;font-size:11px;font-weight:740;line-height:1.35;transition:background .2s,border-color .2s,color .2s}
+    .choice:hover{border-color:var(--accent-border)}
+    .choice[data-type="help"][aria-expanded="true"]{background:var(--green-bg);border-color:var(--green-edge);color:var(--green)}
+    .choice[data-type="harm"][aria-expanded="true"]{background:var(--rose-bg);border-color:var(--rose-edge);color:var(--rose)}
+    /* Persiana de respuestas; la explicación aparece solo al solicitarla */
+    .answer-fold,.reflection-fold{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows .46s var(--ease),opacity .35s}
+    .answer-fold.open,.reflection-fold.open{grid-template-rows:1fr;opacity:1}
+    .answer-inner,.reflection-inner{min-height:0;overflow:hidden}
+    .answer-box{margin-top:13px;padding:15px;border-left:3px solid var(--focus);border-radius:8px;background:var(--focus-bg);color:var(--text);font-size:12px;line-height:1.7}
+    .answer-box[data-type="harm"]{border-color:var(--rose);background:var(--rose-bg)}
+    .answer-box[data-type="help"]{border-color:var(--green);background:var(--green-bg)}
+    .reflection{max-width:966px;margin:18px auto 0;padding:0;border:1px solid var(--line);border-radius:17px;overflow:hidden;opacity:0;transform:translateY(15px);transition:opacity .5s .31s,transform .5s .31s var(--ease)}
+    .detail.ready .reflection{opacity:1;transform:translateY(0)}
+    .reflection-label{padding:18px 20px 7px;color:var(--focus);font-size:11px;font-weight:800;letter-spacing:.04em}
+    .reflection-item + .reflection-item{border-top:1px solid var(--line)}
+    .reflection-button{display:flex;width:100%;align-items:center;justify-content:space-between;gap:15px;padding:15px 20px;text-align:left;font-size:12px;font-weight:650;background:none;border:0;color:var(--text)}
+    .reflection-button span:last-child{display:grid;place-items:center;flex:none;width:25px;height:25px;background:var(--button);border-radius:50%;font-size:17px;color:var(--accent);transition:transform .2s}
+    .reflection-button[aria-expanded="true"] span:last-child{transform:rotate(45deg)}
+    .reflection-inner p{font-size:12px;line-height:1.7;color:var(--muted);padding:0 20px 16px;margin:0;max-width:770px}
+    .flying-layer{position:fixed;inset:0;pointer-events:none;z-index:1000}
+    .flying-pill{position:fixed;z-index:1001;margin:0;will-change:transform;transform-origin:top left}
+    .scene.busy button{pointer-events:none}
+    @media(max-width:730px){
+      .app{width:calc(100% - 22px)}
+      .toolbar{height:59px}
+      .scene{border-radius:18px;min-height:510px}
+      .map{height:540px}
+      .quadrant{width:36%;min-height:100px;gap:8px;padding:14px}
+      .quadrant[data-route="heal"],.quadrant[data-route="learn"]{top:19%}
+      .quadrant[data-route="release"],.quadrant[data-route="thanks"]{bottom:19%}
+      .quadrant[data-route="heal"],.quadrant[data-route="release"]{left:8%}
+      .quadrant[data-route="learn"],.quadrant[data-route="thanks"]{right:8%}
+      .q-name{font-size:clamp(19px,4vw,27px)}
+      .axis-home{width:108px;height:43px}
+      .axis-home[data-axis-home="x-neg"]{left:16px}
+      .axis-home[data-axis-home="x-pos"]{right:16px}
+      .axis-home[data-axis-home="y-pos"]{top:19px}
+      .axis-home[data-axis-home="y-neg"]{bottom:19px}
+      .axis-pill{font-size:11px}
+      .origin{width:97px;height:66px}
+      .detail{padding:17px}
+      .scene[data-view="detail"] .detail{min-height:510px}
+      .case-grid{gap:11px}
+      .case{padding:16px}
+      .choices{grid-template-columns:1fr}
     }
-    button { font: inherit; cursor: pointer; }
-    button:focus-visible, a:focus-visible { outline: 2px solid #c8d7ff; outline-offset: 4px; }
-    button:disabled { cursor: wait; }
-    ::selection { background: rgba(128, 220, 241, .3); }
-    .shell { max-width: 1220px; padding: 0 28px 54px; margin: auto; }
-    .site-header {
-      min-height: 88px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      border-bottom: 1px solid rgba(255, 255, 255, .055);
+    @media(max-width:540px){
+      .map{height:505px}
+      .quadrant{width:39%;min-height:96px;gap:8px;border-radius:13px;padding:12px}
+      .quadrant[data-route="heal"],.quadrant[data-route="learn"]{top:21%}
+      .quadrant[data-route="release"],.quadrant[data-route="thanks"]{bottom:21%}
+      .quadrant[data-route="heal"],.quadrant[data-route="release"]{left:5%}
+      .quadrant[data-route="learn"],.quadrant[data-route="thanks"]{right:5%}
+      .q-no{font-size:9px}
+      .q-name{font-size:clamp(18px,5.8vw,25px)}
+      .q-open{top:9px;right:11px;font-size:12px}
+      .axis-home{width:92px;height:39px}
+      .axis-home[data-axis-home="x-neg"]{left:6px}
+      .axis-home[data-axis-home="x-pos"]{right:6px}
+      .axis-home[data-axis-home="y-pos"]{top:18px}
+      .axis-home[data-axis-home="y-neg"]{bottom:18px}
+      .axis-pill{font-size:10px;border-radius:10px}
+      .axis-pill small{font-size:8px}
+      .axis[data-half="x-neg"]{left:15px;width:calc(50% - 15px)}
+      .axis[data-half="x-pos"]{right:15px}
+      .origin{width:82px;height:61px;border-radius:14px}
+      .origin b{font-size:9px}
+      .origin small{font-size:10px}
+      .detail{padding:15px 13px 25px}
+      .back{padding:0 14px;min-height:45px;font-size:12px}
+      .route-tag{font-size:10px}
+      .equation{gap:6px;margin-top:30px}
+      .eq-slot{width:86px;height:41px}
+      .operator{font-size:18px}
+      .outcome{font-size:clamp(19px,5.3vw,25px)}
+      .lead{font-size:12px;margin:14px auto 20px}
+      .case-grid{grid-template-columns:1fr}
+      .case{padding:17px}
+      .situation{min-height:0;margin:10px 0 13px;font-size:13px}
+      .choices{grid-template-columns:1fr 1fr}
+      .choice{font-size:10px}
+      .reflection{margin-top:11px}
     }
-    .brand { display: inline-flex; gap: 11px; align-items: center; font-size: 13px; font-weight: 720; letter-spacing: -.035em; }
-    .brand-mark {
-      display: grid; place-items: center; width: 32px; height: 32px; border-radius: 11px;
-      border: 1px solid rgba(225, 231, 255, .16); background: linear-gradient(140deg, #26364d, #131a29);
-      color: #d5e9fa; font-size: 19px; font-weight: 400;
+    @media(max-width:350px){
+      .eq-slot{width:80px}
+      .outcome{font-size:19px}
+      .choices{grid-template-columns:1fr}
     }
-    .brand-note { color: #76839a; font-size: 12px; font-weight: 500; margin-left: 4px; }
-    .saved-trigger, .back-button, .outline-button, .primary-button, .text-button {
-      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-      border: 1px solid var(--line); border-radius: 13px; min-height: 40px;
-      transition: transform .22s var(--ease), border-color .22s, background .22s, color .22s;
-    }
-    .saved-trigger { padding: 0 14px; color: #dce4f1; background: rgba(255, 255, 255, .035); font-size: 12px; font-weight: 650; }
-    .saved-trigger:hover, .back-button:hover, .outline-button:hover { border-color: rgba(225, 231, 255, .31); background: rgba(255, 255, 255, .075); transform: translateY(-2px); }
-    .count { display: grid; place-items: center; min-width: 21px; height: 21px; padding: 0 5px; border-radius: 7px; background: #252c3e; color: #e9effa; font-size: 11px; }
-    .icon { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
-    .hero { text-align: center; padding: 70px 12px 39px; }
-    .eyebrow { color: #97a9c9; font-size: 10px; font-weight: 750; letter-spacing: .23em; text-transform: uppercase; }
-    .eyebrow .dot { display: inline-block; margin-right: 8px; color: var(--cyan); }
-    h1 { margin: 20px auto 16px; max-width: 890px; font-size: clamp(34px, 5.4vw, 65px); font-weight: 650; letter-spacing: -.069em; line-height: 1.1; }
-    h1 em { font-style: normal; color: #aebff0; }
-    .hero p { margin: 0 auto; color: var(--muted); max-width: 620px; font-size: clamp(13px, 1.4vw, 15px); line-height: 1.75; }
-    .micro-instruction { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 29px 0 0; color: #8d9db6; font-size: 11px; }
-    .micro-instruction svg { width: 14px; height: 14px; animation: float 2.8s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
-
-    /* ===== 02 / El plano cartesiano ===== */
-    .experience {
-      position: relative; display: grid; isolation: isolate;
-      border-radius: 30px; border: 1px solid rgba(194, 214, 250, .14);
-      background: linear-gradient(151deg, rgba(24, 31, 46, .96), rgba(12, 17, 28, .98) 60%, rgba(16, 23, 34, .98));
-      box-shadow: inset 0 1px rgba(255, 255, 255, .045), 0 30px 115px rgba(0, 0, 0, .2);
-      overflow: hidden;
-      --accent-rgb: 168, 184, 214;
-    }
-    .experience::before {
-      content: ""; position: absolute; inset: -40%; z-index: 0; pointer-events: none;
-      background: radial-gradient(circle at 50% 50%, rgba(var(--accent-rgb), .085), transparent 38%);
-      opacity: .65; transition: opacity .7s, background .7s;
-    }
-    .map, .detail-view { grid-area: 1 / 1; min-width: 0; }
-    .map {
-      position: relative; z-index: 1; height: 585px;
-      background-image:
-        linear-gradient(rgba(170, 197, 236, .032) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(170, 197, 236, .032) 1px, transparent 1px);
-      background-size: 44px 44px;
-      background-position: center center;
-      transition: opacity .7s;
-    }
-    .map::before {
-      content: ""; position: absolute; inset: 0; pointer-events: none;
-      background: radial-gradient(ellipse 62% 70% at center, transparent 14%, rgba(10, 14, 23, .34) 100%);
-    }
-    .axis-half { position: absolute; display: block; pointer-events: none; z-index: 1; background: rgba(177, 196, 232, .29); transition: opacity .6s, filter .55s, background .35s, box-shadow .35s; }
-    .axis-half[data-half="x-pos"] { top: 50%; left: 50%; right: 18px; height: 1px; }
-    .axis-half[data-half="x-neg"] { top: 50%; left: 18px; right: 50%; height: 1px; }
-    .axis-half[data-half="y-pos"] { top: 18px; bottom: 50%; left: 50%; width: 1px; }
-    .axis-half[data-half="y-neg"] { top: 50%; bottom: 18px; left: 50%; width: 1px; }
-    .axis-half.is-lit { background: var(--accent); filter: drop-shadow(0 0 9px var(--accent)); box-shadow: 0 0 20px var(--accent), 0 0 5px var(--accent); }
-    .axis-half.is-dim { opacity: .22; }
-    .axis-arrow { position: absolute; color: #68768d; font-size: 14px; z-index: 1; pointer-events: none; font-weight: 300; }
-    .axis-arrow[data-side="top"] { top: 6px; left: calc(50% - 4px); }
-    .axis-arrow[data-side="bottom"] { bottom: 6px; left: calc(50% - 4px); }
-    .axis-arrow[data-side="left"] { left: 5px; top: calc(50% - 10px); }
-    .axis-arrow[data-side="right"] { right: 5px; top: calc(50% - 10px); }
-    .quadrant {
-      --q: #fff; --q-rgb: 255,255,255;
-      position: absolute; z-index: 2; width: 40%; min-height: 163px;
-      display: flex; flex-direction: column; align-items: flex-start;
-      padding: 23px 26px; text-align: left; color: var(--text);
-      background: linear-gradient(145deg, rgba(var(--q-rgb), .082), rgba(255, 255, 255, .013) 72%);
-      border: 1px solid rgba(var(--q-rgb), .18); border-radius: 22px;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
-      transition: transform .45s var(--ease), background .35s, border-color .35s, box-shadow .35s, opacity .6s, filter .6s;
-    }
-    .quadrant::after {
-      content: "↗"; position: absolute; right: 22px; top: 20px; opacity: .35; font-size: 17px;
-      transition: opacity .25s, transform .35s;
-    }
-    .quadrant:hover, .quadrant:focus-visible, .quadrant.is-suggested {
-      transform: translateY(-5px) scale(1.015);
-      background: linear-gradient(145deg, rgba(var(--q-rgb), .15), rgba(var(--q-rgb), .03) 78%);
-      border-color: rgba(var(--q-rgb), .48);
-      box-shadow: 0 16px 42px rgba(0, 0, 0, .18), 0 0 35px rgba(var(--q-rgb), .10), inset 0 1px rgba(255,255,255,.06);
-    }
-    .quadrant:hover::after, .quadrant:focus-visible::after { opacity: .9; transform: translate(3px, -3px); }
-    .quadrant[data-id="heal"] { --q: var(--coral); --q-rgb: 255,144,164; top: 12%; left: 6%; }
-    .quadrant[data-id="learn"] { --q: var(--amber); --q-rgb: 255,198,117; top: 12%; right: 6%; }
-    .quadrant[data-id="release"] { --q: var(--cyan); --q-rgb: 128,220,241; bottom: 12%; left: 6%; }
-    .quadrant[data-id="thanks"] { --q: var(--emerald); --q-rgb: 143,231,186; bottom: 12%; right: 6%; }
-    .quad-number { font-size: 10px; color: rgba(var(--q-rgb), .8); letter-spacing: .18em; font-weight: 750; }
-    .quad-title { margin: 18px 0 5px; font-size: clamp(22px, 2.6vw, 33px); line-height: 1.04; letter-spacing: -.065em; font-weight: 720; color: var(--q); }
-    .quad-hint { margin: 5px 0 0; font-size: 12px; line-height: 1.4; color: #aebad1; }
-    .axis-anchor {
-      position: absolute; z-index: 4; width: 126px; height: 43px;
-      transition: filter .45s, opacity .45s;
-    }
-    .axis-anchor[data-anchor="y-pos"] { left: 50%; top: 17px; transform: translateX(-50%); }
-    .axis-anchor[data-anchor="y-neg"] { left: 50%; bottom: 17px; transform: translateX(-50%); }
-    .axis-anchor[data-anchor="x-pos"] { right: 16px; top: 50%; transform: translateY(-50%); }
-    .axis-anchor[data-anchor="x-neg"] { left: 16px; top: 50%; transform: translateY(-50%); }
-    .axis-pill {
-      position: relative; display: flex; align-items: center; justify-content: center;
-      width: 100%; height: 100%; padding: 0 8px; border-radius: 999px;
-      border: 1px solid rgba(187, 204, 235, .22);
-      background: rgba(29, 38, 56, .97); color: #dfe6f4;
-      font-size: 12px; font-weight: 680; letter-spacing: -.02em; white-space: nowrap;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, .18);
-      transition: color .3s, border-color .3s, background .3s, box-shadow .35s;
-    }
-    .axis-pill.is-lit, .axis-pill.is-flying, .eq-slot .axis-pill {
-      color: var(--accent); border-color: rgba(var(--accent-rgb), .65);
-      background: rgba(var(--accent-rgb), .13);
-      box-shadow: 0 0 25px rgba(var(--accent-rgb), .19), inset 0 0 15px rgba(var(--accent-rgb), .04);
-    }
-    .axis-pill.is-lit { animation: pillPulse 2s ease-in-out infinite; }
-    @keyframes pillPulse { 50% { box-shadow: 0 0 35px rgba(var(--accent-rgb), .36), inset 0 0 15px rgba(var(--accent-rgb), .08); } }
-    .origin {
-      position: absolute; z-index: 5; left: 50%; top: 50%; transform: translate(-50%, -50%);
-      width: 105px; height: 105px; display: flex; align-items: center; justify-content: center; flex-direction: column;
-      border: 1px solid rgba(186, 202, 236, .28); border-radius: 50%;
-      background: radial-gradient(circle at 50% 30%, #29354b, #131b2a 70%);
-      color: #f0f4ff; box-shadow: 0 0 0 9px rgba(168, 190, 233, .04), 0 0 0 21px rgba(168, 190, 233, .023), 0 14px 38px rgba(0, 0, 0, .25);
-      transition: transform .4s var(--ease), box-shadow .4s, opacity .5s, filter .5s;
-    }
-    .origin:hover, .origin:focus-visible { transform: translate(-50%, -50%) scale(1.07); box-shadow: 0 0 0 10px rgba(168, 190, 233, .07), 0 0 0 24px rgba(168, 190, 233, .03), 0 14px 38px rgba(0, 0, 0, .3); }
-    .origin strong { font-size: 12px; letter-spacing: -.045em; }
-    .origin small { font-size: 12px; font-weight: 550; color: #93a3c0; margin-top: 4px; }
-    .origin-popover {
-      position: absolute; z-index: 10; left: 50%; top: calc(50% + 70px); transform: translate(-50%, -8px);
-      width: min(345px, calc(100% - 38px)); padding: 21px 24px; border-radius: 18px;
-      background: #1b273a; border: 1px solid rgba(200, 216, 245, .23);
-      box-shadow: 0 18px 65px rgba(0, 0, 0, .45); pointer-events: none; visibility: hidden; opacity: 0;
-      transition: opacity .25s, transform .3s var(--ease), visibility .25s;
-    }
-    .origin-popover.is-open { visibility: visible; pointer-events: auto; opacity: 1; transform: translate(-50%, 0); }
-    .origin-popover b { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: #aec7e9; }
-    .origin-popover p { color: #d7e0f0; font-size: 13px; line-height: 1.7; margin: 10px 0 0; }
-    .experience.is-detail .map { pointer-events: none; }
-    .experience.is-detail .quadrant, .experience.is-detail .origin, .experience.is-detail .axis-half:not(.is-lit), .experience.is-detail .axis-arrow, .experience.is-detail .axis-anchor:not(.is-selected) {
-      filter: blur(14px); opacity: 0;
-    }
-    .experience.is-detail .origin-popover { opacity: 0; visibility: hidden; }
-    .experience.is-detail .axis-anchor.is-selected { opacity: 1; }
-    .experience.is-detail .axis-half.is-lit { opacity: .63; }
-    .experience.is-detail .map { background-image: none; }
-
-    /* ===== 03 / Ecuación, tarjetas y coreografía ===== */
-    .detail-view {
-      position: relative; z-index: 3; min-height: 0; height: 0; overflow: hidden;
-      opacity: 0; visibility: hidden; pointer-events: none;
-      padding: 0 36px;
-      transition: opacity .35s, visibility .35s;
-    }
-    .experience.is-detail .detail-view { height: auto; min-height: 585px; padding: 25px 36px 33px; overflow: visible; opacity: 1; visibility: visible; pointer-events: auto; }
-    .detail-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-    .back-button { background: rgba(255, 255, 255, .045); color: #e8eefa; padding: 0 14px; font-size: 12px; font-weight: 620; }
-    .detail-step { color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: .2em; text-transform: uppercase; }
-    .equation-wrap { text-align: center; padding: 25px 0 15px; }
-    .equation-caption { color: #acb7c9; font-size: 12px; margin: 0 0 18px; }
-    .equation { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
-    .eq-slot { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 132px; height: 47px; }
-    .eq-slot .axis-pill { font-size: 12px; }
-    .operator { font-size: 25px; line-height: 1; color: #6f7e96; font-weight: 350; }
-    .eq-result {
-      color: var(--accent); font-size: clamp(23px, 3.3vw, 43px); line-height: 1.05;
-      font-weight: 760; letter-spacing: -.07em;
-      opacity: 0; filter: blur(8px); transform: translateY(9px);
-      transition: opacity .6s, filter .6s, transform .6s var(--ease);
-    }
-    .detail-view.is-revealed .eq-result { opacity: 1; filter: blur(0); transform: translateY(0); }
-    .detail-body { max-width: 980px; margin: 0 auto; opacity: 0; transform: translateY(17px); transition: opacity .6s .14s, transform .6s .14s var(--ease); }
-    .detail-view.is-revealed .detail-body { opacity: 1; transform: translateY(0); }
-    /* Revelación escalonada: primero los casos, luego las preguntas y por último las acciones. */
-    .case-card, .detail-lower > *, .detail-actions > * {
-      opacity: 0; transform: translateY(15px);
-      transition: opacity .55s var(--ease), transform .55s var(--ease);
-    }
-    .detail-view.is-revealed .case-card,
-    .detail-view.is-revealed .detail-lower > *,
-    .detail-view.is-revealed .detail-actions > * { opacity: 1; transform: translateY(0); }
-    .detail-view.is-revealed .case-card:nth-child(1) { transition-delay: .17s; }
-    .detail-view.is-revealed .case-card:nth-child(2) { transition-delay: .3s; }
-    .detail-view.is-revealed .detail-lower > :nth-child(1) { transition-delay: .43s; }
-    .detail-view.is-revealed .detail-lower > :nth-child(2) { transition-delay: .54s; }
-    .detail-view.is-revealed .detail-actions > :nth-child(1) { transition-delay: .67s; }
-    .detail-view.is-revealed .detail-actions > :nth-child(2) { transition-delay: .76s; }
-    .detail-view.is-revealed .detail-actions > :nth-child(3) { transition-delay: .85s; }
-    .detail-lead { text-align: center; color: #c2ccdd; font-size: 13px; line-height: 1.65; margin: 2px auto 25px; max-width: 640px; }
-    .cases { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-    .case-card {
-      display: flex; flex-direction: column; min-height: 226px; padding: 22px 23px 20px;
-      border: 1px solid rgba(203, 218, 247, .11); border-radius: 19px;
-      background: rgba(255, 255, 255, .034);
-    }
-    .case-label { color: var(--accent); font-size: 10px; font-weight: 750; letter-spacing: .17em; text-transform: uppercase; }
-    .case-situation { font-size: 14px; font-weight: 590; line-height: 1.5; letter-spacing: -.025em; margin: 11px 0 17px; min-height: 43px; color: #edf1f9; }
-    .dilemma { font-size: 11px; color: #96a6c1; margin: auto 0 10px; font-weight: 650; }
-    .case-tabs { display: flex; gap: 5px; background: rgba(4, 8, 15, .4); border-radius: 11px; padding: 4px; }
-    .case-tab { flex: 1; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #8e9bb2; min-height: 34px; padding: 4px; font-size: 10px; font-weight: 700; white-space: nowrap; }
-    .case-tab[aria-selected="true"] { border-color: rgba(216, 228, 250, .15); color: #edf5ff; background: #2a3445; box-shadow: 0 2px 7px rgba(0,0,0,.16); }
-    .case-tab[data-mode="conscious"][aria-selected="true"] { color: var(--accent); background: rgba(var(--accent-rgb), .11); border-color: rgba(var(--accent-rgb), .23); }
-    .case-answer { color: #c9d2e1; font-size: 12px; line-height: 1.65; padding-top: 13px; min-height: 67px; }
-    .case-answer strong { color: var(--accent); }
-    .detail-lower { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; margin-top: 14px; }
-    .thoughts, .takeaway {
-      padding: 22px 23px; border: 1px solid rgba(203, 218, 247, .11); border-radius: 18px;
-      background: rgba(255, 255, 255, .028);
-    }
-    .section-label { color: #a9b6cb; font-size: 10px; letter-spacing: .14em; font-weight: 750; text-transform: uppercase; }
-    .thoughts p { color: #e3eaf5; font-size: 12px; margin: 10px 0 0; line-height: 1.5; }
-    .takeaway { border-color: rgba(var(--accent-rgb), .22); background: rgba(var(--accent-rgb), .07); }
-    .takeaway .section-label { color: var(--accent); }
-    .takeaway p { margin: 12px 0 0; font-size: 15px; font-weight: 620; line-height: 1.5; letter-spacing: -.035em; }
-    .detail-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 23px auto 0; }
-    .primary-button, .outline-button { padding: 0 17px; font-size: 12px; font-weight: 680; min-height: 42px; }
-    .primary-button { background: var(--accent); color: #0e1420; border-color: transparent; }
-    .primary-button:hover { transform: translateY(-2px); box-shadow: 0 7px 24px rgba(var(--accent-rgb), .28); }
-    .outline-button { background: rgba(255,255,255,.04); color: #e2eaf6; }
-    .flight-layer { position: fixed; inset: 0; z-index: 999; pointer-events: none; }
-    .flight-layer .axis-pill { will-change: transform; animation: none !important; }
-    .experience.is-animating button:not(.axis-pill) { pointer-events: none; }
-
-    /* ===== 04 / Diálogo de favoritos y pie ===== */
-    .after-map { display: flex; justify-content: center; gap: 8px; align-items: center; padding: 23px 5px; color: #8291a9; font-size: 11px; text-align: center; }
-    .after-map .mini-dot { width: 5px; height: 5px; border-radius: 50%; background: #8fdbba; }
-    .site-footer { display: flex; justify-content: space-between; align-items: flex-start; gap: 26px; border-top: 1px solid rgba(255,255,255,.065); padding: 25px 0 0; color: #78869e; font-size: 11px; line-height: 1.6; }
-    .site-footer p { margin: 0; max-width: 660px; }
-    .footer-mark { color: #a8b7ce; white-space: nowrap; font-weight: 700; }
-    dialog {
-      width: min(460px, calc(100vw - 28px)); max-height: min(80vh, 670px);
-      border: 1px solid rgba(207, 225, 255, .19); border-radius: 23px;
-      padding: 24px; background: #172132; color: #f3f6fd;
-      box-shadow: 0 25px 100px rgba(0,0,0,.6);
-    }
-    dialog::backdrop { background: rgba(3, 6, 12, .75); backdrop-filter: blur(9px); }
-    .dialog-top { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-    .dialog-top h2 { margin: 0; font-size: 20px; letter-spacing: -.045em; }
-    .dialog-close { display: grid; place-items: center; width: 34px; height: 34px; background: rgba(255,255,255,.06); border: 1px solid var(--line); color: #e2eaf6; border-radius: 10px; font-size: 21px; }
-    .dialog-note { margin: 10px 0 23px; color: #9cabc1; font-size: 12px; line-height: 1.6; }
-    .saved-list { display: grid; gap: 9px; }
-    .saved-item {
-      width: 100%; display: flex; align-items: center; justify-content: space-between; text-align: left; gap: 10px;
-      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1); border-radius: 13px; padding: 14px 15px; color: #eef3fa;
-    }
-    .saved-item:hover { border-color: rgba(255,255,255,.33); }
-    .saved-item span { font-weight: 750; letter-spacing: -.03em; font-size: 13px; }
-    .saved-item small { display: block; margin-top: 4px; color: #9caec5; font-size: 11px; font-weight: 450; }
-    .saved-empty { text-align: center; border: 1px dashed rgba(200,217,245,.16); border-radius: 15px; padding: 28px 15px; color: #aebbd0; line-height: 1.6; font-size: 12px; }
-    .toast {
-      position: fixed; z-index: 1001; bottom: 24px; left: 50%; transform: translate(-50%, 18px);
-      background: #eff4ff; color: #182236; border-radius: 13px; padding: 12px 19px; font-size: 12px; font-weight: 700;
-      box-shadow: 0 14px 45px rgba(0, 0, 0, .32);
-      opacity: 0; pointer-events: none; transition: transform .3s var(--ease), opacity .3s;
-    }
-    .toast.is-visible { transform: translate(-50%, 0); opacity: 1; }
-
-    /* ===== 05 / Pequeñas pantallas y accesibilidad ===== */
-    @media (max-width: 760px) {
-      .shell { padding: 0 15px 30px; }
-      .site-header { min-height: 70px; }
-      .brand-note { display: none; }
-      .hero { padding: 55px 3px 32px; }
-      h1 { max-width: 550px; }
-      .experience { border-radius: 23px; }
-      .map { height: 545px; background-size: 35px 35px; }
-      .quadrant { width: 42%; min-height: 145px; padding: 18px; border-radius: 18px; }
-      .quadrant[data-id="heal"], .quadrant[data-id="learn"] { top: 14%; }
-      .quadrant[data-id="release"], .quadrant[data-id="thanks"] { bottom: 14%; }
-      .quadrant[data-id="heal"], .quadrant[data-id="release"] { left: 4%; }
-      .quadrant[data-id="learn"], .quadrant[data-id="thanks"] { right: 4%; }
-      .quad-title { margin-top: 14px; font-size: 25px; }
-      .quad-hint { font-size: 11px; }
-      .axis-anchor { width: 112px; height: 39px; }
-      .axis-anchor[data-anchor="x-pos"] { right: 9px; }
-      .axis-anchor[data-anchor="x-neg"] { left: 9px; }
-      .origin { width: 89px; height: 89px; }
-      .origin strong { font-size: 10px; }
-      .experience.is-detail .detail-view { padding: 19px 16px 25px; }
-      .cases { gap: 10px; }
-      .case-card { padding: 18px 15px; }
-      .site-footer { flex-direction: column; gap: 8px; }
-    }
-    @media (max-width: 560px) {
-      .hero { padding-top: 51px; }
-      .hero p { max-width: 360px; }
-      .micro-instruction { margin-top: 21px; }
-      .map { height: 510px; }
-      .quadrant { width: 43%; min-height: 122px; padding: 16px 13px; border-radius: 15px; }
-      .quadrant[data-id="heal"], .quadrant[data-id="learn"] { top: 16%; }
-      .quadrant[data-id="release"], .quadrant[data-id="thanks"] { bottom: 16%; }
-      .quad-title { font-size: clamp(20px, 6vw, 25px); margin-top: 19px; }
-      .quad-hint { display: none; }
-      .quadrant::after { right: 13px; top: 12px; font-size: 13px; }
-      .axis-anchor { width: 99px; height: 37px; }
-      .axis-anchor[data-anchor="y-pos"] { top: 18px; }
-      .axis-anchor[data-anchor="y-neg"] { bottom: 18px; }
-      .axis-anchor[data-anchor="x-pos"] { right: 7px; }
-      .axis-anchor[data-anchor="x-neg"] { left: 7px; }
-      .axis-pill { font-size: 10px; }
-      .origin { width: 80px; height: 80px; }
-      .origin-popover { top: calc(50% + 53px); }
-      .detail-top { align-items: center; }
-      .detail-step { font-size: 9px; }
-      .back-button { padding: 0 10px; }
-      .equation-wrap { padding: 30px 0 12px; }
-      .equation { gap: 7px; }
-      .eq-slot { width: 91px; height: 40px; }
-      .eq-slot .axis-pill { font-size: 10px; }
-      .operator { font-size: 18px; }
-      .eq-result { font-size: 24px; }
-      .detail-lead { margin-bottom: 18px; font-size: 12px; }
-      .cases { grid-template-columns: 1fr; gap: 11px; }
-      .case-card { min-height: 0; padding: 18px; }
-      .case-situation { min-height: 0; margin-bottom: 13px; }
-      .case-answer { min-height: 0; padding-top: 10px; }
-      .detail-lower { grid-template-columns: 1fr; gap: 11px; margin-top: 11px; }
-      .thoughts, .takeaway { padding: 18px; }
-      .detail-actions { gap: 8px; }
-      .primary-button, .outline-button { flex: 1 1 145px; }
-      .detail-actions .outline-button:last-child { flex: 1 1 100%; }
-      .after-map { font-size: 10px; }
-    }
-    @media (max-width: 350px) {
-      .brand { font-size: 11px; }
-      .saved-trigger { padding: 0 8px; }
-      .quadrant { padding: 14px 10px; }
-      .quad-title { font-size: 20px; }
-      .eq-slot { width: 85px; }
-      .eq-result { font-size: 21px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; transition-delay: 0ms !important; }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;transition-delay:0ms!important;scroll-behavior:auto!important}
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header class="site-header">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">✳</span><span>El arte de responder</span><span class="brand-note">/ Un mapa interior</span></div>
-      <button class="saved-trigger" id="open-saved" type="button" aria-label="Abrir mis favoritos">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12v16l-6-4-6 4z"/></svg>
-        Favoritos <span class="count" id="saved-count">0</span>
+  <div class="app">
+    <div class="toolbar">
+      <div class="logo" role="img" aria-label="Logo de la página: plano cartesiano rosado y morado">
+        <svg viewBox="0 0 30 30" aria-hidden="true"><path d="M15 3v24M3 15h24"/><circle cx="15" cy="15" r="4" fill="white" stroke="none"/></svg>
+      </div>
+      <button id="theme-switch" class="theme-switch" type="button" aria-label="Cambiar a modo oscuro">
+        <svg id="theme-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 14.3A8.4 8.4 0 0 1 9.7 3.6 8.4 8.4 0 1 0 20.4 14.3Z"/></svg>
+        <span id="theme-label">Modo oscuro</span>
       </button>
-    </header>
-
+    </div>
     <main>
-      <section class="hero" aria-labelledby="page-title">
-        <div class="eyebrow"><span class="dot">✦</span> Un ejercicio de perspectiva</div>
-        <h1 id="page-title">Lo que sucede es un punto.<br><em>Tu respuesta, una dirección.</em></h1>
-        <p>Un mismo hecho puede abrir cuatro caminos. Descubre cuál estás recorriendo y qué puedes hacer con lo que sientes.</p>
-        <div class="micro-instruction">
-          <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="m7 5 10 7-10 7"/></svg>
-          Explora un cuadrante para descubrir su significado
-        </div>
-      </section>
-
-      <section class="experience" id="experience" aria-label="Plano cartesiano interactivo sobre la respuesta emocional">
+      <section class="scene" id="scene" data-view="map" aria-label="Plano cartesiano: verdad y dolor">
         <div class="map" id="map">
-          <span class="axis-half" data-half="x-pos"></span>
-          <span class="axis-half" data-half="x-neg"></span>
-          <span class="axis-half" data-half="y-pos"></span>
-          <span class="axis-half" data-half="y-neg"></span>
-          <span class="axis-arrow" data-side="top" aria-hidden="true">↑</span>
-          <span class="axis-arrow" data-side="bottom" aria-hidden="true">↓</span>
-          <span class="axis-arrow" data-side="left" aria-hidden="true">←</span>
-          <span class="axis-arrow" data-side="right" aria-hidden="true">→</span>
-
-          <button type="button" class="quadrant" data-id="heal" aria-label="Cuadrante II: Sana, no es verdad y te duele">
-            <span class="quad-number">II · −X / +Y</span><strong class="quad-title">SANA</strong><span class="quad-hint">Mira qué herida tocó.</span>
+          <span class="axis" data-half="x-neg"></span><span class="axis" data-half="x-pos"></span>
+          <span class="axis" data-half="y-pos"></span><span class="axis" data-half="y-neg"></span>
+          <span class="arrow top" aria-hidden="true">↑</span><span class="arrow bottom" aria-hidden="true">↓</span>
+          <span class="arrow left" aria-hidden="true">←</span><span class="arrow right" aria-hidden="true">→</span>
+          <button class="quadrant" type="button" data-route="heal" aria-label="Cuadrante II: Sana">
+            <span class="q-no">II · −X / +Y</span><span class="q-name">SANA</span><span class="q-open" aria-hidden="true">↗</span>
           </button>
-          <button type="button" class="quadrant" data-id="learn" aria-label="Cuadrante I: Aprende, es verdad y te duele">
-            <span class="quad-number">I · +X / +Y</span><strong class="quad-title">APRENDE</strong><span class="quad-hint">Transforma la señal en cambio.</span>
+          <button class="quadrant" type="button" data-route="learn" aria-label="Cuadrante I: Aprende">
+            <span class="q-no">I · +X / +Y</span><span class="q-name">APRENDE</span><span class="q-open" aria-hidden="true">↗</span>
           </button>
-          <button type="button" class="quadrant" data-id="release" aria-label="Cuadrante III: Olvida, no es verdad y no te duele">
-            <span class="quad-number">III · −X / −Y</span><strong class="quad-title">OLVIDA</strong><span class="quad-hint">No alimentes el ruido.</span>
+          <button class="quadrant" type="button" data-route="release" aria-label="Cuadrante III: Olvida">
+            <span class="q-no">III · −X / −Y</span><span class="q-name">OLVIDA</span><span class="q-open" aria-hidden="true">↗</span>
           </button>
-          <button type="button" class="quadrant" data-id="thanks" aria-label="Cuadrante IV: Da gracias, es verdad y no te duele">
-            <span class="quad-number">IV · +X / −Y</span><strong class="quad-title">DA GRACIAS</strong><span class="quad-hint">Reconoce tu camino.</span>
+          <button class="quadrant" type="button" data-route="thanks" aria-label="Cuadrante IV: Da gracias">
+            <span class="q-no">IV · +X / −Y</span><span class="q-name">DA GRACIAS</span><span class="q-open" aria-hidden="true">↗</span>
           </button>
-
-          <div class="axis-anchor" data-anchor="y-pos"><button type="button" class="axis-pill" data-axis="y-pos">Te duele</button></div>
-          <div class="axis-anchor" data-anchor="y-neg"><button type="button" class="axis-pill" data-axis="y-neg">No te duele</button></div>
-          <div class="axis-anchor" data-anchor="x-pos"><button type="button" class="axis-pill" data-axis="x-pos">Es verdad</button></div>
-          <div class="axis-anchor" data-anchor="x-neg"><button type="button" class="axis-pill" data-axis="x-neg">No es verdad</button></div>
-
-          <button type="button" class="origin" id="origin" aria-expanded="false" aria-controls="origin-popover" aria-label="El Suceso, origen de coordenadas cero cero. Descubre la idea central">
-            <strong>EL SUCESO</strong><small>(0,0)</small>
-          </button>
-          <aside class="origin-popover" id="origin-popover" aria-label="Idea central">
-            <b>Todo comienza aquí</b>
-            <p>Lo ocurrido es el punto de partida. Las palabras ajenas no tienen por qué definir tu valor: también cuenta la relación que construyes con ellas y la respuesta que eliges.</p>
-          </aside>
+          <div class="axis-home" data-axis-home="y-pos"><button class="axis-pill" type="button" data-axis-pill="y-pos">Te duele<small>+Y</small></button></div>
+          <div class="axis-home" data-axis-home="y-neg"><button class="axis-pill" type="button" data-axis-pill="y-neg">No te duele<small>−Y</small></button></div>
+          <div class="axis-home" data-axis-home="x-pos"><button class="axis-pill" type="button" data-axis-pill="x-pos">Es verdad<small>+X</small></button></div>
+          <div class="axis-home" data-axis-home="x-neg"><button class="axis-pill" type="button" data-axis-pill="x-neg">No es verdad<small>−X</small></button></div>
+          <button class="origin" id="origin" type="button" aria-controls="origin-note" aria-expanded="false"><b>EL SUCESO</b><small>(0,0)</small></button>
+          <div class="origin-note" id="origin-note" hidden>Lo que ocurre es el punto de partida. Puedes elegir cómo responder sin negar lo que sientes.</div>
         </div>
 
-        <div class="detail-view" id="detail-view" aria-hidden="true">
-          <div class="detail-top">
-            <button type="button" class="back-button" id="back-to-map">
-              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        <article class="detail" id="detail" aria-label="Contenido del cuadrante" aria-hidden="true">
+          <div class="detail-header">
+            <button class="back" id="back" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5-7 7 7 7"/><path d="M7 12h13"/></svg>
               Volver al plano
             </button>
-            <span class="detail-step" id="detail-step">Cuadrante I</span>
+            <span class="route-tag" id="route-tag">CUADRANTE I</span>
           </div>
-          <div class="equation-wrap">
-            <p class="equation-caption">Dos realidades. Una nueva manera de responder.</p>
-            <div class="equation" aria-label="Ecuación visual del cuadrante">
-              <span class="eq-slot" id="slot-one"></span>
-              <span class="operator" aria-hidden="true">+</span>
-              <span class="eq-slot" id="slot-two"></span>
-              <span class="operator" aria-hidden="true">=</span>
-              <span class="eq-result" id="result-label">APRENDE</span>
-            </div>
+          <div class="equation" aria-label="Ecuación del cuadrante">
+            <span class="eq-slot" id="eq-one"></span><span class="operator" aria-hidden="true">+</span>
+            <span class="eq-slot" id="eq-two"></span><span class="operator" aria-hidden="true">=</span>
+            <strong class="outcome" id="outcome">APRENDE</strong>
           </div>
-          <div class="detail-body">
-            <p class="detail-lead" id="detail-lead"></p>
-            <div class="cases" id="cases"></div>
-            <div class="detail-lower">
-              <section class="thoughts">
-                <div class="section-label">Preguntas para pensar</div>
-                <p id="thought-one"></p>
-                <p id="thought-two"></p>
-              </section>
-              <section class="takeaway" aria-label="Síntesis del cuadrante">
-                <div class="section-label">Para recordar</div>
-                <p id="takeaway-text"></p>
-              </section>
-            </div>
-            <div class="detail-actions">
-              <button type="button" class="primary-button" id="save-current">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5h12v16l-6-4-6 4z"/></svg>
-                <span id="save-label">Guardar favorito</span>
-              </button>
-              <button type="button" class="outline-button" id="copy-current">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"/></svg>
-                Copiar síntesis
-              </button>
-              <button type="button" class="outline-button" id="download-current">
-                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/></svg>
-                Descargar síntesis
-              </button>
-            </div>
-          </div>
-        </div>
+          <p class="lead" id="lead"></p>
+          <div class="case-grid" id="case-grid"></div>
+          <section class="reflection" id="reflection" aria-label="Preguntas para pensar">
+            <div class="reflection-label">PREGUNTAS PARA PENSAR</div>
+            <div id="reflection-list"></div>
+          </section>
+        </article>
       </section>
-      <div class="after-map"><span class="mini-dot"></span> La práctica no consiste en negar lo que sientes, sino en comprenderlo.</div>
     </main>
-    <footer class="site-footer">
-      <p>Una herramienta de reflexión, no un diagnóstico. Ante maltrato o peligro real, poner límites, protegerte y pedir apoyo también son respuestas conscientes.</p>
-      <span class="footer-mark">PERSPECTIVA · 0,0</span>
-    </footer>
   </div>
-
-  <dialog id="saved-dialog" aria-labelledby="saved-heading">
-    <div class="dialog-top">
-      <h2 id="saved-heading">Tus favoritos</h2>
-      <button type="button" class="dialog-close" id="close-saved" aria-label="Cerrar favoritos">×</button>
-    </div>
-    <p class="dialog-note">Los cuadrantes se guardan solo en este navegador. Vuelve a ellos cuando necesites otra perspectiva.</p>
-    <div class="saved-list" id="saved-list"></div>
-  </dialog>
-  <div class="flight-layer" id="flight-layer" aria-hidden="true"></div>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
+  <div class="flying-layer" id="flying-layer" aria-hidden="true"></div>
   <script>
     "use strict";
-
-    /* ===== 06 / Contenido pedagógico: cuatro rutas, ocho situaciones ===== */
+    // Mensajes breves y casos cotidianos de adultos
     const routes = {
       learn: {
-        name: "APRENDE", numeral: "I", color: "#ffc675", rgb: "255, 198, 117",
-        axes: ["y-pos", "x-pos"],
-        lead: "Si es cierto y duele, puedes convertir esa incomodidad en una mejora concreta. Escuchar no significa castigarte.",
-        takeaway: "La verdad que incomoda puede convertirse en una habilidad nueva.",
-        questions: [
-          "¿Qué parte de esta crítica puedo comprobar con hechos?",
-          "¿Qué acción pequeña haré diferente la próxima vez?"
-        ],
+        name: "APRENDE", numeral: "I", axes: ["y-pos","x-pos"],
+        color: "var(--amber)", bg: "var(--amber-bg)", edge: "var(--amber-edge)",
+        lead: "Es cierto y te duele. Usa esa información para mejorar algo concreto.",
         cases: [
-          {
-            situation: "Tu profesor señala errores reales en un trabajo que preparaste con esfuerzo.",
-            automatic: "Me justifico, culpo al tiempo y dejo el trabajo igual.",
-            conscious: "Comparo mis errores con la rúbrica, pido un ejemplo bien resuelto y rehago la parte que falló."
-          },
-          {
-            situation: "Un amigo te señala, con razón, que interrumpes cuando conversa.",
-            automatic: "Me ofendo y digo que simplemente hablo con entusiasmo.",
-            conscious: "Observo cuándo interrumpo, practico escuchar hasta el final y pido a mi amigo que me avise si reincido."
-          }
+          {situation: "Un cliente tiene razón: entregaste un trabajo después de la fecha acordada.",
+           question: "¿Cómo conviene responder?",
+           harm: "Te justificas y culpas a otras personas. El retraso sigue sin resolverse.",
+           help: "Reconoces el retraso, acuerdas una nueva fecha y cambias tu forma de organizar las entregas."},
+          {situation: "Una compañera te dice, con razón, que interrumpes en las reuniones.",
+           question: "¿Qué puedes hacer con esa crítica?",
+           harm: "Te molestas y dices que así es tu personalidad. No corriges el hábito.",
+           help: "Escuchas el ejemplo, dejas terminar a los demás y observas si mejora la conversación."}
+        ],
+        reflections: [
+          ["¿Cómo distinguir una crítica útil?","Comprueba si describe un hecho específico. Quédate con la información que puedas verificar."],
+          ["¿Qué hago si la verdad me incomoda?","Elige una conducta pequeña que puedas cambiar hoy. No necesitas atacarte para mejorar."]
         ]
       },
       heal: {
-        name: "SANA", numeral: "II", color: "#ff90a4", rgb: "255, 144, 164",
-        axes: ["y-pos", "x-neg"],
-        lead: "Si no es verdad y aun así duele, tal vez el comentario activó un temor antiguo. La falsedad no define tu valor.",
-        takeaway: "No toda palabra dolorosa dice algo de ti; a veces señala algo que necesitas cuidar.",
-        questions: [
-          "¿Qué miedo sobre mí despertó esa frase?",
-          "¿Cómo puedo darme hoy el respaldo que me faltó antes?"
-        ],
+        name: "SANA", numeral: "II", axes: ["y-pos","x-neg"],
+        color: "var(--rose)", bg: "var(--rose-bg)", edge: "var(--rose-edge)",
+        lead: "No es cierto, pero te duele. Vale la pena atender lo que ese comentario activó.",
         cases: [
-          {
-            situation: "Alguien dice que eres incapaz, aunque tu trayectoria demuestra lo contrario.",
-            automatic: "Intento demostrar mi valor ante todos, una y otra vez.",
-            conscious: "Reconozco mi miedo a no ser suficiente, reviso mis logros y dejo de pedirle a esa persona mi validación."
-          },
-          {
-            situation: "Se burlan de tu aspecto con una afirmación falsa y el comentario te persigue.",
-            automatic: "Me comparo con otras personas y repito la burla en mi mente.",
-            conscious: "Identifico la inseguridad sobre mi imagen, rechazo la etiqueta y busco apoyo si esa herida persiste."
-          }
+          {situation: "Una persona afirma que no eres capaz, aunque tus resultados dicen lo contrario.",
+           question: "¿Qué te ayuda en esta situación?",
+           harm: "Tratas de convencerla durante horas y terminas dudando de tus capacidades.",
+           help: "Revisas los hechos, reconoces tu miedo a no ser suficiente y dejas de depender de su aprobación."},
+          {situation: "Alguien hace un comentario falso sobre tu apariencia y no puedes dejar de pensarlo.",
+           question: "¿Dónde conviene poner la atención?",
+           harm: "Te comparas con los demás y repites la burla mentalmente.",
+           help: "Identificas tu inseguridad, cuestionas esa etiqueta y buscas apoyo si el malestar continúa."}
+        ],
+        reflections: [
+          ["¿Por qué me afecta algo falso?","Puede haber tocado una inseguridad anterior. Sentir dolor no convierte la afirmación en verdad."],
+          ["¿Qué puedo hacer para cuidarme?","Háblate con respeto, busca apoyo si lo necesitas y pon límites a los comentarios ofensivos."]
         ]
       },
       release: {
-        name: "OLVIDA", numeral: "III", color: "#80dcf1", rgb: "128, 220, 241",
-        axes: ["y-neg", "x-neg"],
-        lead: "Si no es cierto ni perturba tu calma, no merece espacio en tu mente. Soltar también es una decisión activa.",
-        takeaway: "No todos los ruidos merecen una respuesta ni tu energía.",
-        questions: [
-          "¿Esto tendrá alguna importancia real dentro de un mes?",
-          "¿En qué prefiero invertir hoy la atención que ahorro?"
-        ],
+        name: "OLVIDA", numeral: "III", axes: ["y-neg","x-neg"],
+        color: "var(--sky)", bg: "var(--sky-bg)", edge: "var(--sky-edge)",
+        lead: "No es cierto y no te duele. Puedes dejarlo pasar sin gastar energía.",
         cases: [
-          {
-            situation: "Circula un rumor falso e inofensivo sobre cómo pasaste tu fin de semana.",
-            automatic: "Respondo a cada comentario y mantengo vivo el rumor.",
-            conscious: "Compruebo que no tenga consecuencias reales y sigo con mi vida sin explicaciones innecesarias."
-          },
-          {
-            situation: "Un desconocido deja una crítica absurda en una publicación que disfrutaste.",
-            automatic: "Discuto durante horas para conseguir la última palabra.",
-            conscious: "Reconozco que no aporta hechos ni valor y cierro la conversación para volver a lo importante."
-          }
+          {situation: "En un chat circula un rumor falso sobre tus planes del fin de semana.",
+           question: "¿Vale la pena seguir la discusión?",
+           harm: "Respondes a cada mensaje y haces que el rumor dure más.",
+           help: "Si no hay consecuencias reales, no lo alimentas y sigues con tus actividades."},
+          {situation: "Un desconocido escribe una crítica absurda sobre uno de tus gustos.",
+           question: "¿Qué respuesta te conviene?",
+           harm: "Discutes para tener la última palabra, aunque el asunto no importa.",
+           help: "Reconoces que no cambia nada importante y dejas la conversación ahí."}
+        ],
+        reflections: [
+          ["¿Todo comentario merece respuesta?","No. Atiende lo que tenga consecuencias reales; no necesitas responder a todo."],
+          ["¿Cuándo conviene no ignorarlo?","Si causa daño, acoso o afecta tu reputación o seguridad, documenta los hechos y actúa."]
         ]
       },
       thanks: {
-        name: "DA GRACIAS", numeral: "IV", color: "#8fe7ba", rgb: "143, 231, 186",
-        axes: ["y-neg", "x-pos"],
-        lead: "Si es verdad y ya no duele —o incluso te hace bien— puedes mirar el proceso con serenidad y gratitud.",
-        takeaway: "Agradece lo aprendido, incluso cuando el camino no fue fácil.",
-        questions: [
-          "¿Qué puedo hacer hoy que antes me parecía imposible?",
-          "¿Qué personas o esfuerzos hicieron posible este cambio?"
-        ],
+        name: "DA GRACIAS", numeral: "IV", axes: ["y-neg","x-pos"],
+        color: "var(--green)", bg: "var(--green-bg)", edge: "var(--green-edge)",
+        lead: "Es cierto y no te duele. Reconoce lo que has conseguido o superado.",
         cases: [
-          {
-            situation: "Antes te aterraba hablar en público; hoy puedes exponer con tranquilidad.",
-            automatic: "Minimizo el logro y pienso que todavía debería hacerlo mejor.",
-            conscious: "Reconozco mis ensayos, a quienes me ayudaron y la constancia que convirtió el miedo en confianza."
-          },
-          {
-            situation: "Recuerdas un error real de hace años y ya no sientes vergüenza.",
-            automatic: "Me reprocho no haber aprendido antes y revivo el pasado.",
-            conscious: "Agradezco la lección, la reparación que hice y la madurez que hoy me permite recordar sin castigarme."
-          }
+          {situation: "Antes te costaba hablar en reuniones; ahora participas con tranquilidad.",
+           question: "¿Qué vale la pena reconocer?",
+           harm: "Restas importancia a tu avance porque todavía no lo haces perfecto.",
+           help: "Reconoces las veces que practicaste y la confianza que has desarrollado."},
+          {situation: "Recuerdas un error real del pasado y ya puedes hablar de él sin vergüenza.",
+           question: "¿Cómo mirar ese recuerdo?",
+           harm: "Te reprochas no haber aprendido más rápido y te castigas otra vez.",
+           help: "Reconoces lo que reparaste, lo que aprendiste y que hoy actúas de otra manera."}
+        ],
+        reflections: [
+          ["¿Qué ha cambiado respecto de antes?","Compara tus reacciones anteriores con las actuales. Identifica un avance concreto."],
+          ["¿A quién o a qué puedes agradecer?","A tu esfuerzo, a las personas que te apoyaron y a las decisiones que tomaste."]
         ]
       }
     };
 
-    /* ===== 07 / Referencias y estados ===== */
-    const experience = document.getElementById("experience");
-    const map = document.getElementById("map");
-    const detail = document.getElementById("detail-view");
-    const origin = document.getElementById("origin");
-    const originPopover = document.getElementById("origin-popover");
-    const flightLayer = document.getElementById("flight-layer");
+    const $ = selector => document.querySelector(selector);
+    const scene = $("#scene");
+    const detail = $("#detail");
     const quadrants = Array.from(document.querySelectorAll(".quadrant"));
-    const axes = Array.from(document.querySelectorAll(".axis-pill"));
-    const halfAxes = Array.from(document.querySelectorAll(".axis-half"));
-    const slotOne = document.getElementById("slot-one");
-    const slotTwo = document.getElementById("slot-two");
-    const savedDialog = document.getElementById("saved-dialog");
-    const savedList = document.getElementById("saved-list");
-    const toastNode = document.getElementById("toast");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const storageKey = "el-arte-de-responder:favoritos:v1";
-    const anchorFor = axis => document.querySelector('[data-anchor="' + axis + '"]');
-    const pillFor = axis => document.querySelector('[data-axis="' + axis + '"]');
+    const axisLines = Array.from(document.querySelectorAll(".axis"));
+    const pills = Array.from(document.querySelectorAll("[data-axis-pill]"));
+    const layer = $("#flying-layer");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let current = null;
     let busy = false;
-    let toastTimer = null;
-    let saved = [];
 
-    try {
-      const restored = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      saved = Array.isArray(restored) ? restored.filter(id => Object.prototype.hasOwnProperty.call(routes, id)) : [];
-    } catch (error) {
-      saved = [];
+    // Cambiar entre tema claro y oscuro; sin botones ni menús adicionales
+    function applyTheme(mode) {
+      document.documentElement.dataset.theme = mode;
+      const dark = mode === "dark";
+      $("#theme-label").textContent = dark ? "Modo claro" : "Modo oscuro";
+      $("#theme-switch").setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+      $("#theme-icon").innerHTML = dark
+        ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/>'
+        : '<path d="M20.4 14.3A8.4 8.4 0 0 1 9.7 3.6 8.4 8.4 0 1 0 20.4 14.3Z"/>';
+      $('meta[name="theme-color"]').content = dark ? "#151722" : "#faf9fd";
+      try { localStorage.setItem("plano-respuestas-theme",mode); } catch (error) {}
     }
+    let initialTheme = "light";
+    try { if(localStorage.getItem("plano-respuestas-theme")==="dark") initialTheme="dark"; } catch(error){}
+    applyTheme(initialTheme);
+    $("#theme-switch").addEventListener("click", () => applyTheme(document.documentElement.dataset.theme==="dark"?"light":"dark"));
 
-    function announce(message) {
-      toastNode.textContent = message;
-      toastNode.classList.add("is-visible");
-      window.clearTimeout(toastTimer);
-      toastTimer = window.setTimeout(() => toastNode.classList.remove("is-visible"), 2700);
+    const homeOf = axis => document.querySelector('[data-axis-home="' + axis + '"]');
+    const pillOf = axis => document.querySelector('[data-axis-pill="' + axis + '"]');
+    function setAccent(id) {
+      const r = routes[id];
+      scene.style.setProperty("--focus",r ? r.color : "var(--accent)");
+      scene.style.setProperty("--focus-bg",r ? r.bg : "var(--accent-bg)");
+      scene.style.setProperty("--focus-edge",r ? r.edge : "var(--accent-border)");
     }
-
-    function theme(id) {
-      const route = routes[id];
-      experience.style.setProperty("--accent", route ? route.color : "#a9b7d1");
-      experience.style.setProperty("--accent-rgb", route ? route.rgb : "168, 184, 214");
-    }
-
-    function preview(id) {
+    function highlight(id) {
       if (current || busy) return;
-      const matching = id ? routes[id].axes : [];
-      theme(id);
-      axes.forEach(pill => pill.classList.toggle("is-lit", matching.includes(pill.dataset.axis)));
-      halfAxes.forEach(line => {
-        line.classList.toggle("is-lit", matching.includes(line.dataset.half));
-        line.classList.toggle("is-dim", Boolean(id) && !matching.includes(line.dataset.half));
+      setAccent(id);
+      const selected = id ? routes[id].axes : [];
+      axisLines.forEach(line => {
+        line.classList.toggle("is-lit",selected.includes(line.dataset.half));
+        line.classList.toggle("is-dim",Boolean(id) && !selected.includes(line.dataset.half));
       });
+      pills.forEach(p => p.classList.toggle("is-lit",selected.includes(p.dataset.axisPill)));
     }
-
-    quadrants.forEach(quadrant => {
-      const id = quadrant.dataset.id;
-      quadrant.addEventListener("pointerenter", () => preview(id));
-      quadrant.addEventListener("pointerleave", () => preview(null));
-      quadrant.addEventListener("focus", () => preview(id));
-      quadrant.addEventListener("blur", () => preview(null));
-      quadrant.addEventListener("click", () => openRoute(id));
+    quadrants.forEach(q => {
+      const id=q.dataset.route;
+      q.addEventListener("pointerenter",()=>highlight(id));
+      q.addEventListener("pointerleave",()=>highlight(null));
+      q.addEventListener("focus",()=>highlight(id));
+      q.addEventListener("blur",()=>highlight(null));
+      q.addEventListener("click",()=>openRoute(id));
     });
-
-    axes.forEach(pill => {
-      pill.addEventListener("click", () => {
-        if (current || busy) return;
-        const axis = pill.dataset.axis;
-        quadrants.forEach(q => q.classList.toggle("is-suggested", routes[q.dataset.id].axes.includes(axis)));
-        announce("Este eje aparece en dos cuadrantes. Elige uno para explorarlo.");
-        window.setTimeout(() => quadrants.forEach(q => q.classList.remove("is-suggested")), 1350);
-      });
+    pills.forEach(p => p.addEventListener("click",() => {
+      if(current || busy) return;
+      const matching = quadrants.filter(q => routes[q.dataset.route].axes.includes(p.dataset.axisPill));
+      matching.forEach(q => q.classList.add("suggested"));
+      window.setTimeout(()=>matching.forEach(q=>q.classList.remove("suggested")),850);
+    }));
+    $("#origin").addEventListener("click",() => {
+      const note=$("#origin-note"); note.hidden=!note.hidden;
+      $("#origin").setAttribute("aria-expanded",String(!note.hidden));
     });
-
-    origin.addEventListener("click", () => {
-      const isOpen = originPopover.classList.toggle("is-open");
-      origin.setAttribute("aria-expanded", String(isOpen));
-    });
-    document.addEventListener("pointerdown", event => {
-      if (!origin.contains(event.target) && !originPopover.contains(event.target)) {
-        originPopover.classList.remove("is-open");
-        origin.setAttribute("aria-expanded", "false");
+    document.addEventListener("pointerdown",event => {
+      if(!$("#origin").contains(event.target) && !$("#origin-note").contains(event.target)) {
+        $("#origin-note").hidden=true; $("#origin").setAttribute("aria-expanded","false");
       }
     });
 
-    function renderRoute(id) {
-      const r = routes[id];
-      document.getElementById("result-label").textContent = r.name;
-      document.getElementById("detail-step").textContent = "CUADRANTE " + r.numeral;
-      document.getElementById("detail-lead").textContent = r.lead;
-      document.getElementById("thought-one").textContent = "01  " + r.questions[0];
-      document.getElementById("thought-two").textContent = "02  " + r.questions[1];
-      document.getElementById("takeaway-text").textContent = r.takeaway;
-      document.getElementById("cases").innerHTML = r.cases.map((c, i) =>
-        '<article class="case-card" data-case="' + i + '">' +
-          '<span class="case-label">CASO 0' + (i + 1) + '</span>' +
-          '<p class="case-situation">' + c.situation + '</p>' +
-          '<p class="dilemma">¿Qué harías tú?</p>' +
-          '<div class="case-tabs" role="tablist" aria-label="Respuesta al caso ' + (i + 1) + '">' +
-            '<button type="button" class="case-tab" role="tab" data-mode="automatic" aria-selected="true" aria-controls="case-answer-' + i + '">Reacción automática</button>' +
-            '<button type="button" class="case-tab" role="tab" data-mode="conscious" aria-selected="false" tabindex="-1" aria-controls="case-answer-' + i + '">Relación consciente</button>' +
-          '</div>' +
-          '<div class="case-answer" role="tabpanel" id="case-answer-' + i + '">' + c.automatic + '</div>' +
-        '</article>'
-      ).join("");
-      updateSaveButton();
-    }
-
-    /* Pestañas de casos: cada respuesta cambia sin reconstruir la tarjeta. */
-    document.getElementById("cases").addEventListener("click", event => {
-      const tab = event.target.closest(".case-tab");
-      if (!tab || !current) return;
-      const card = tab.closest(".case-card");
-      const caseIndex = Number(card.dataset.case);
-      const chosen = tab.dataset.mode;
-      card.querySelectorAll(".case-tab").forEach(button => {
-        button.setAttribute("aria-selected", String(button === tab));
-        button.tabIndex = button === tab ? 0 : -1;
-      });
-      card.querySelector(".case-answer").textContent = routes[current].cases[caseIndex][chosen];
-    });
-    document.getElementById("cases").addEventListener("keydown", event => {
-      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-      const tab = event.target.closest(".case-tab");
-      if (!tab) return;
-      event.preventDefault();
-      const other = Array.from(tab.parentNode.querySelectorAll(".case-tab")).find(t => t !== tab);
-      other.focus();
-      other.click();
-    });
-
-    /* ===== 08 / FLIP real: se anima EL MISMO botón entre dos nodos ===== */
-    async function flyPill(pill, sourceRect, destination) {
-      const target = destination.getBoundingClientRect();
-      flightLayer.appendChild(pill);
-      pill.classList.add("is-flying");
-      pill.style.position = "fixed";
-      pill.style.left = sourceRect.left + "px";
-      pill.style.top = sourceRect.top + "px";
-      pill.style.width = sourceRect.width + "px";
-      pill.style.height = sourceRect.height + "px";
-      pill.style.margin = "0";
-      pill.style.transform = "none";
-
-      if (!reducedMotion.matches) {
-        const dx = target.left - sourceRect.left;
-        const dy = target.top - sourceRect.top;
-        const sx = target.width / sourceRect.width;
-        const sy = target.height / sourceRect.height;
-        const animation = pill.animate(
-          [
-            { transform: "translate3d(0,0,0) scale(1,1)", opacity: 1 },
-            { transform: "translate3d(" + dx + "px," + dy + "px,0) scale(" + sx + "," + sy + ")", opacity: 1 }
-          ],
-          { duration: 1020, easing: "cubic-bezier(.19,1,.22,1)", fill: "forwards" }
-        );
-        try { await animation.finished; } catch (error) { /* Una animación cancelada no bloquea la interfaz. */ }
-        destination.appendChild(pill);
-        animation.cancel();
-      } else {
-        destination.appendChild(pill);
-      }
-      pill.removeAttribute("style");
-      pill.classList.remove("is-flying");
-    }
-
-    async function openRoute(id) {
-      if (busy || current) return;
-      busy = true;
-      current = id;
-      const r = routes[id];
-      theme(id);
-      halfAxes.forEach(line => {
-        const selected = r.axes.includes(line.dataset.half);
-        line.classList.toggle("is-lit", selected);
-        line.classList.toggle("is-dim", !selected);
-      });
-      originPopover.classList.remove("is-open");
-      origin.setAttribute("aria-expanded", "false");
-      quadrants.forEach(q => q.classList.toggle("selected", q.dataset.id === id));
-      document.querySelectorAll(".axis-anchor").forEach(anchor => {
-        anchor.classList.toggle("is-selected", r.axes.includes(anchor.dataset.anchor));
-      });
-      r.axes.forEach(axis => {
-        pillFor(axis).classList.add("is-lit");
-      });
-      const moving = r.axes.map(axis => ({ pill: pillFor(axis), start: pillFor(axis).getBoundingClientRect() }));
-      renderRoute(id);
-      detail.classList.remove("is-revealed");
-      detail.setAttribute("aria-hidden", "false");
-      experience.classList.add("is-detail", "is-animating");
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      await Promise.all([
-        flyPill(moving[0].pill, moving[0].start, slotOne),
-        flyPill(moving[1].pill, moving[1].start, slotTwo)
-      ]);
-      detail.classList.add("is-revealed");
-      experience.classList.remove("is-animating");
-      busy = false;
-      document.getElementById("back-to-map").focus({ preventScroll: true });
-    }
-
-    async function closeRoute() {
-      if (busy || !current) return;
-      busy = true;
-      experience.classList.add("is-animating");
-      detail.classList.remove("is-revealed");
-      const oldId = current;
-      const r = routes[oldId];
-      const moving = r.axes.map(axis => ({ pill: pillFor(axis), start: pillFor(axis).getBoundingClientRect(), axis }));
-      if (!reducedMotion.matches) await new Promise(resolve => setTimeout(resolve, 130));
-      await Promise.all(moving.map(item => flyPill(item.pill, item.start, anchorFor(item.axis))));
-      current = null;
-      detail.setAttribute("aria-hidden", "true");
-      experience.classList.remove("is-detail", "is-animating");
-      document.querySelectorAll(".axis-anchor").forEach(anchor => anchor.classList.remove("is-selected"));
-      axes.forEach(pill => pill.classList.remove("is-lit"));
-      quadrants.forEach(q => q.classList.remove("selected"));
-      preview(null);
-      busy = false;
-      const q = document.querySelector('.quadrant[data-id="' + oldId + '"]');
-      q.focus({ preventScroll: true });
-    }
-    document.getElementById("back-to-map").addEventListener("click", closeRoute);
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape" && current && !savedDialog.open) closeRoute();
-    });
-
-    /* ===== 09 / Favoritos y síntesis portátil ===== */
-    function updateSaveButton() {
-      const isSaved = current && saved.includes(current);
-      document.getElementById("save-label").textContent = isSaved ? "Quitar favorito" : "Guardar favorito";
-      document.getElementById("saved-count").textContent = String(saved.length);
-    }
-    function persistSaved() {
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(saved));
-        return true;
-      } catch (error) {
-        announce("El navegador impide guardar favoritos en este momento.");
-        return false;
-      }
-    }
-    document.getElementById("save-current").addEventListener("click", () => {
-      if (!current || busy) return;
-      const already = saved.includes(current);
-      saved = already ? saved.filter(id => id !== current) : saved.concat(current);
-      if (!persistSaved()) {
-        saved = already ? saved.concat(current) : saved.filter(id => id !== current);
-      } else {
-        announce(already ? "Eliminado de tus favoritos." : "Guardado para volver cuando lo necesites.");
-      }
-      updateSaveButton();
-    });
-
-    function summary(id) {
-      const r = routes[id];
-      const phrases = { "y-pos": "Te duele", "y-neg": "No te duele", "x-pos": "Es verdad", "x-neg": "No es verdad" };
-      return "EL ARTE DE RESPONDER · CUADRANTE " + r.numeral + "\n" +
-        phrases[r.axes[0]] + " + " + phrases[r.axes[1]] + " = " + r.name + "\n\n" +
-        r.lead + "\n\n" +
-        "PARA RECORDAR\n" + r.takeaway + "\n\n" +
-        "PREGUNTAS PARA PENSAR\n1. " + r.questions[0] + "\n2. " + r.questions[1] + "\n\n" +
-        r.cases.map((c, i) =>
-          "CASO " + (i + 1) + ": " + c.situation + "\n" +
-          "Reacción automática: " + c.automatic + "\n" +
-          "Relación consciente: " + c.conscious
-        ).join("\n\n") + "\n\nUn mapa interior para consultar cuando lo necesites.";
-    }
-
-    document.getElementById("copy-current").addEventListener("click", async () => {
-      if (!current) return;
-      const text = summary(current);
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          const input = document.createElement("textarea");
-          input.value = text; input.style.position = "fixed"; input.style.opacity = "0";
-          document.body.appendChild(input); input.select();
-          const worked = document.execCommand("copy");
-          input.remove();
-          if (!worked) throw new Error("No se pudo copiar");
-        }
-        announce("Síntesis copiada al portapapeles.");
-      } catch (error) { announce("No se pudo copiar. Usa «Descargar síntesis»."); }
-    });
-
-    document.getElementById("download-current").addEventListener("click", () => {
-      if (!current) return;
-      const blob = new Blob(["\uFEFF" + summary(current)], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "El-arte-de-responder-" + routes[current].name.toLowerCase().replaceAll(" ", "-") + ".txt";
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      announce("Síntesis descargada.");
-    });
-
-    function renderSaved() {
-      savedList.replaceChildren();
-      if (!saved.length) {
-        const empty = document.createElement("div");
-        empty.className = "saved-empty";
-        empty.textContent = "Aún no has guardado un cuadrante. Explora el plano y guarda el que quieras volver a consultar.";
-        savedList.append(empty);
-      } else {
-        saved.forEach(id => {
-          const route = routes[id];
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "saved-item";
-          button.innerHTML = "<div><span>" + route.name + "</span><small>Cuadrante " + route.numeral + " · Revisar mi reflexión</small></div><span aria-hidden='true'>↗</span>";
-          button.style.borderLeft = "3px solid " + route.color;
-          button.addEventListener("click", async () => {
-            savedDialog.close();
-            if (busy) return;
-            if (current && current !== id) await closeRoute();
-            if (!current) await openRoute(id);
-            experience.scrollIntoView({ behavior: reducedMotion.matches ? "instant" : "smooth", block: "start" });
+    /* Cada caso pregunta y despliega la respuesta elegida, no presupone conocimientos de psicología */
+    function renderContent(id) {
+      const r=routes[id];
+      $("#route-tag").textContent="CUADRANTE "+r.numeral;
+      $("#outcome").textContent=r.name;
+      $("#lead").textContent=r.lead;
+      $("#case-grid").replaceChildren();
+      r.cases.forEach((c,i) => {
+        const card=document.createElement("section");
+        card.className="case";
+        card.innerHTML='<span class="case-no">CASO '+(i+1)+'</span>'+
+          '<p class="situation"></p>'+
+          '<p class="case-question"></p>'+
+          '<div class="choices">'+
+            '<button type="button" class="choice" data-type="harm" aria-expanded="false">✕ Lo que no ayuda</button>'+
+            '<button type="button" class="choice" data-type="help" aria-expanded="false">✓ Lo que sí ayuda</button>'+
+          '</div>'+
+          '<div class="answer-fold"><div class="answer-inner"><div class="answer-box"></div></div></div>';
+        card.querySelector(".situation").textContent=c.situation;
+        card.querySelector(".case-question").textContent=c.question;
+        const fold=card.querySelector(".answer-fold");
+        const answer=card.querySelector(".answer-box");
+        card.querySelectorAll(".choice").forEach(button => {
+          button.addEventListener("click",() => {
+            const chosen=button.dataset.type;
+            const already=button.getAttribute("aria-expanded")==="true";
+            card.querySelectorAll(".choice").forEach(b=>b.setAttribute("aria-expanded","false"));
+            if(already) { fold.classList.remove("open"); return; }
+            answer.textContent=c[chosen];
+            answer.dataset.type=chosen;
+            button.setAttribute("aria-expanded","true");
+            fold.classList.add("open");
+            if(!reduceMotion.matches) answer.animate(
+              [{opacity:.35,transform:"translateY(-7px)"},{opacity:1,transform:"translateY(0)"}],
+              {duration:380,easing:"cubic-bezier(.22,1,.36,1)"}
+            );
           });
-          savedList.append(button);
         });
-      }
-      document.getElementById("saved-count").textContent = String(saved.length);
+        $("#case-grid").append(card);
+      });
+      $("#reflection-list").replaceChildren();
+      r.reflections.forEach((pair,i) => {
+        const wrap=document.createElement("div");
+        wrap.className="reflection-item";
+        const button=document.createElement("button");
+        button.type="button"; button.className="reflection-button"; button.setAttribute("aria-expanded","false");
+        button.innerHTML="<span></span><span aria-hidden='true'>+</span>";
+        button.firstElementChild.textContent=pair[0];
+        const fold=document.createElement("div"); fold.className="reflection-fold";
+        const inner=document.createElement("div"); inner.className="reflection-inner";
+        const answer=document.createElement("p"); answer.textContent=pair[1];
+        inner.append(answer);fold.append(inner);
+        button.addEventListener("click",() => {
+          const open=button.getAttribute("aria-expanded")==="true";
+          button.setAttribute("aria-expanded",String(!open));
+          fold.classList.toggle("open",!open);
+        });
+        wrap.append(button,fold); $("#reflection-list").append(wrap);
+      });
+      $("#eq-one").replaceChildren(); $("#eq-two").replaceChildren();
     }
-    document.getElementById("open-saved").addEventListener("click", () => {
-      renderSaved();
-      if (typeof savedDialog.showModal === "function") savedDialog.showModal();
-      else savedDialog.setAttribute("open", "");
+
+    /* Técnica FLIP: una copia visual viaja entre la etiqueta del eje y la ecuación.
+       El mapa se oculta entero antes de mostrar el detalle; no queda texto superpuesto. */
+    async function fly(from,to,label) {
+      const a=from.getBoundingClientRect();
+      const b=to.getBoundingClientRect();
+      const ghost=document.createElement("div");
+      ghost.className="axis-pill flying-pill";
+      ghost.innerHTML=label.innerHTML;
+      ghost.style.left=a.left+"px"; ghost.style.top=a.top+"px";
+      ghost.style.width=a.width+"px"; ghost.style.height=a.height+"px";
+      layer.append(ghost);
+      if(!reduceMotion.matches) {
+        const dx=b.left-a.left,dy=b.top-a.top;
+        const sx=b.width/a.width,sy=b.height/a.height;
+        const anim=ghost.animate([
+          {transform:"translate3d(0,0,0) scale(1,1)"},
+          {transform:"translate3d("+dx+"px,"+dy+"px,0) scale("+sx+","+sy+")"}
+        ],{duration:920,easing:"cubic-bezier(.22,1,.36,1)",fill:"forwards"});
+        try {await anim.finished;}catch(error){}
+      }
+      ghost.remove();
+    }
+    async function openRoute(id) {
+      if(current || busy)return;
+      busy=true; scene.classList.add("busy");
+      const r=routes[id];current=id;setAccent(id);
+      $("#origin-note").hidden=true;$("#origin").setAttribute("aria-expanded","false");
+      const sources=r.axes.map(axis=>pillOf(axis));
+      const bounds=sources.map(p=>p.getBoundingClientRect());
+      renderContent(id);
+      detail.classList.remove("ready");detail.setAttribute("aria-hidden","false");
+      // Pintar primero el detalle; el mapa completo desaparece, sin restos de letras.
+      scene.dataset.view="detail";
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      const slots=[$("#eq-one"),$("#eq-two")];
+      const hiddenArrivals=sources.map((pill,i)=>{
+        const clone=pill.cloneNode(true);
+        clone.classList.remove("is-lit");clone.classList.add("eq-pill");
+        clone.removeAttribute("data-axis-pill");
+        clone.setAttribute("aria-hidden","true");clone.tabIndex=-1;
+        slots[i].append(clone);
+        return clone;
+      });
+      // Los orígenes pueden dejar de renderizarse después de cambiar la vista; se conservan sus rectángulos.
+      await Promise.all(bounds.map(async (rect,i) => {
+        const virtualFrom={getBoundingClientRect:()=>rect};
+        await fly(virtualFrom,slots[i],sources[i]);
+        hiddenArrivals[i].classList.add("arrived");
+      }));
+      detail.classList.add("ready");scene.classList.remove("busy");busy=false;
+      $("#back").focus({preventScroll:true});
+    }
+    async function closeRoute() {
+      if(!current || busy)return;
+      busy=true;scene.classList.add("busy");
+      const id=current;const axes=routes[id].axes;
+      const arrivals=Array.from(document.querySelectorAll(".eq-pill"));
+      const start=arrivals.map(el=>el.getBoundingClientRect());
+      detail.classList.remove("ready");
+      arrivals.forEach(el=>el.classList.remove("arrived"));
+      axes.forEach(axis=>pillOf(axis).classList.add("travelling"));
+      scene.dataset.view="map";
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      await Promise.all(start.map((rect,i) => {
+        const virtualFrom={getBoundingClientRect:()=>rect};
+        return fly(virtualFrom,homeOf(axes[i]),pillOf(axes[i]));
+      }));
+      axes.forEach(axis=>pillOf(axis).classList.remove("travelling"));
+      $("#eq-one").replaceChildren();$("#eq-two").replaceChildren();
+      detail.setAttribute("aria-hidden","true");
+      current=null;busy=false;scene.classList.remove("busy");
+      highlight(null);
+      const q=document.querySelector('[data-route="'+id+'"]');
+      q.focus({preventScroll:true});
+    }
+    $("#back").addEventListener("click",closeRoute);
+    document.addEventListener("keydown",event=>{
+      if(event.key==="Escape" && current && !busy)closeRoute();
     });
-    document.getElementById("close-saved").addEventListener("click", () => savedDialog.close());
-    savedDialog.addEventListener("click", event => {
-      if (event.target === savedDialog) savedDialog.close();
-    });
-    updateSaveButton();
   </script>
 </body>
 </html>
