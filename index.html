@@ -202,11 +202,12 @@
     .origin-popover b { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: #aec7e9; }
     .origin-popover p { color: #d7e0f0; font-size: 13px; line-height: 1.7; margin: 10px 0 0; }
     .experience.is-detail .map { pointer-events: none; }
-    .experience.is-detail .quadrant, .experience.is-detail .origin, .experience.is-detail .axis-half, .experience.is-detail .axis-arrow, .experience.is-detail .axis-anchor:not(.is-selected) {
+    .experience.is-detail .quadrant, .experience.is-detail .origin, .experience.is-detail .axis-half:not(.is-lit), .experience.is-detail .axis-arrow, .experience.is-detail .axis-anchor:not(.is-selected) {
       filter: blur(14px); opacity: 0;
     }
     .experience.is-detail .origin-popover { opacity: 0; visibility: hidden; }
     .experience.is-detail .axis-anchor.is-selected { opacity: 1; }
+    .experience.is-detail .axis-half.is-lit { opacity: .63; }
     .experience.is-detail .map { background-image: none; }
 
     /* ===== 03 / Ecuación, tarjetas y coreografía ===== */
@@ -705,7 +706,7 @@
           '<p class="dilemma">¿Qué harías tú?</p>' +
           '<div class="case-tabs" role="tablist" aria-label="Respuesta al caso ' + (i + 1) + '">' +
             '<button type="button" class="case-tab" role="tab" data-mode="automatic" aria-selected="true" aria-controls="case-answer-' + i + '">Reacción automática</button>' +
-            '<button type="button" class="case-tab" role="tab" data-mode="conscious" aria-selected="false" aria-controls="case-answer-' + i + '">Relación consciente</button>' +
+            '<button type="button" class="case-tab" role="tab" data-mode="conscious" aria-selected="false" tabindex="-1" aria-controls="case-answer-' + i + '">Relación consciente</button>' +
           '</div>' +
           '<div class="case-answer" role="tabpanel" id="case-answer-' + i + '">' + c.automatic + '</div>' +
         '</article>'
@@ -777,7 +778,11 @@
       current = id;
       const r = routes[id];
       theme(id);
-      preview(null); // La selección se representará con el tema del detalle.
+      halfAxes.forEach(line => {
+        const selected = r.axes.includes(line.dataset.half);
+        line.classList.toggle("is-lit", selected);
+        line.classList.toggle("is-dim", !selected);
+      });
       originPopover.classList.remove("is-open");
       origin.setAttribute("aria-expanded", "false");
       quadrants.forEach(q => q.classList.toggle("selected", q.dataset.id === id));
